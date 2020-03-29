@@ -15,7 +15,7 @@ The goals / steps of this project are the following:
 [//]: # (Image References)
 
 [image1]: ./examples/original_vs_corrected.jpg "Undistorted"
-[image2]: ./test_images/straight_lines1.jpg "Road Transformed"
+[image2]: ./examples/poly_margin_fit.jpg "Road Transformed"
 [image3]: ./examples/binary_example.jpg "Binary Example"
 [image4]: ./examples/transformation_comparison.jpg "Transformation Example"
 [image5]: ./examples/window_fit.jpg "Window Fit"
@@ -143,7 +143,7 @@ The lane-line detection has two main algorithms. The `LaneFinder.start_lane_find
 ![alt text][image5]
 
 Once the first polynomial has been found, I switch to the `LaneFinder.search_around_poly()` method which uses the previous fit polynomial to look for activated pixels around it within a certain margin. This assumes the maximum change in curvature is constrained. This is a safe assumption on highways, but could fail quickly in subdivisions or secondary roads where many lanes diverge frequently. If this search method fails, the frame is not processed and we switch back to the previous `LaneFinder.start_lane_find()` method for the next frame. More advanced error handling could, for example, broaden the margin used to search to attempt to find lane markers. A retry count could be implemented where, given a number of attempts, the algorithm reverts to the `LaneFinder.start_lane_find()` method.
-![alt text][image6]
+![alt text][image2]
 #### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 Here the `Line` class has the method `update_radius` that computes the radius of the last averaged line. I chose to compute the radius on the average line coefficients because this value will be required for the control systems to properly direct the vehicle within the turn. The instantaneous value may be too noisy or erroneous for the control system to handle. A key design factor in self-driving cars (or any large robotic system) is to properly distribute tasks. The lane finding algorithms are tasked to determine the lane lines, their position in relation to the vehicle, and their radius. Therefore if we can handle these errors sooner, there will be less remediation required for systems later in the self-driving software stack. Here, we use averaging as a basic method for reducing error and obtaining smoother lane following.  
 
@@ -165,7 +165,7 @@ The `Camera` class provides the method `Camera.display_lane()` that plots the la
 
 The video pipeline is the same as the image pipeline, however here we can utilize the `LaneFinder.search_around_poly()` method after first finding the lanes with the window method. The video also tests the error handling portion of the pipeline, where we can revert to simpler lane detection schemes or reset the lane properties when the `LaneFinder.search_around_poly()` is unable to get a proper lane line fit.
 
-Here's a [link to my video result](./project_video.mp4)
+Here's a [link to my video result](./project_video_output.mp4)
 
 ---
 
