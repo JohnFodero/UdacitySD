@@ -95,7 +95,7 @@ The image filtering pipeline is a tuned version with structure like the pipeline
 
 1. The HSL image and corresponding H, S, and L channels are created.
 2. We compute the derivative (using the Sobel operation) in the x direction across the l_channel. Ideally finding increases/decreases in lightness in the x direction. This is then scaled to 255 so it can be displayed as a full saturation color chanel later.
-3. This image is then thresholded to user specifications. The default values in the `Camera.pipeline()` method are used, which were tuned by the interactive gui on the `examples/example.ipynb` notebook.
+3. This image is passed to the `pipeline2` function which filters `HSV` channels to attempt to detect the line by its color. The default values in the `Camera.pipeline()` method are used, which were tuned by the interactive gui on the `examples/example.ipynb` notebook.
 4. The saturation channel is also thresholded (without Sobel operation) per tuned parameters (using the same notebook tuning setup above).
 5. These two images are stacked and can be used later for processing.
 
@@ -172,7 +172,7 @@ Here's a [link to my video result](./project_video_output.mp4)
 ### Discussion
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  
-At the end of the video, we see the lane finding algorithm fail. I used the `debug` section of the `Project.ipynb` notebook. Here I was able to extract an image that clearly made the algorithm fail. Once extracted, I used the `example.ipynb` to analyze this frame. Given more time, I would use this frame to change the `Camera.pipeline()` design. Filtering different channels with additional sobel filtering could help this situation.
+The filters used to detect the lanes in the video and in the test images are 'overtuned' to this data. It does not represent a real world example where lighting, weather, faded lines, high shadows, are present. I made this robust enough to handle the given scenario, but it would likely fail with these varied conditions. In the challenge video, we see the algorithm fail when it detects cracks in the road as lane edges. This may show a dependence on the Sobel operation, where the gradient is high in this area.
 
 #### 2. What could you do to make it more robust?
 In this video, we see the lane finding algorithm fail after exposure to shadows in the lane. I implemented basic "retry" logic, where, if the polynomial doesn't fit, it will revert to the previous "windowed" technique for finding the lane. Other constraints could be applied (such as high opposing curvature of the lanes, crossing lanes, extreme curvature, etc) to trigger this reset to the `LaneFinder.start_lane_find()` algorithm.

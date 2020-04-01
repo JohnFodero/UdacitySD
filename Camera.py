@@ -120,7 +120,7 @@ class Camera():
         # 3) Return a binary image of threshold result
         return binary
     
-    def pipeline(self, img, s_thresh=(90, 255), sx_thresh=(20, 100)):
+    def pipeline(self, img, s_thresh=(90, 120), sx_thresh=(20, 100)):
         img = np.copy(img)
         # Convert to HLS color space and separate the V channel
         hls = cv2.cvtColor(img, cv2.COLOR_RGB2HLS)
@@ -138,11 +138,41 @@ class Camera():
         sxbinary[(scaled_sobel >= sx_thresh[0]) & (scaled_sobel <= sx_thresh[1])] = 1
 
         # Threshold color channel
-        s_binary = np.zeros_like(s_channel)
-        s_binary[(s_channel >= s_thresh[0]) & (s_channel <= s_thresh[1])] = 1
+        #s_channel = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        #s_binary = np.zeros_like(s_channel)
+        #s_binary[(s_channel >= s_thresh[0]) & (s_channel <= s_thresh[1])] = 1
         # Stack each channel
+        s_binary = self.pipeline2(img)
         color_binary = np.dstack(( np.zeros_like(sxbinary), sxbinary, s_binary)) * 255
-        return color_binary, s_binary, sxbinary
+        return color_binary.astype('uint8'), s_binary, sxbinary
+    
+    def thresh(self, img, thresh_min, thresh_max):
+        ret = np.zeros_like(img)
+        ret[(img >= thresh_min) & (img <= thresh_max)] = 1
+        return ret
+    
+    def pipeline2(self, img):
+        b = np.zeros((img.shape[0],img.shape[1]))
+        hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+        H = hsv[:,:,0]
+        S = hsv[:,:,1]
+        V = hsv[:,:,2]
+
+        R = img[:,:,0]
+        G = img[:,:,1]
+        B = img[:,:,2]
+
+        t_yellow_H = self.thresh(H,10,30)
+        t_yellow_S = self.thresh(S,50,255)
+        t_yellow_V = self.thresh(V,150,255)
+
+        t_white_R = self.thresh(R,225,255)
+        t_white_V = self.thresh(V,230,255)
+
+        #b[(t_yellow_H==1) & (t_yellow_S==1) & (t_yellow_V==1)] = 1
+        b[(t_white_R==1)|(t_white_V==1)] = 1
+        
+        return b
      
     def undistort_image(self, img):
         return cv2.undistort(img, self.mtx, self.dist, None, self.mtx)

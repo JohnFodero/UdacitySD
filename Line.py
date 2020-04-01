@@ -42,9 +42,11 @@ class Line():
                 self.fits = self.fits[len(self.fits) - self.n:]
             self.avg_fit = sum(self.fits)/len(self.fits)
     
-    def update_radius(self, ym_per_pix=30/720):
+    def update_radius(self, ym_per_pix=30/720, xm_per_pix=3.7/700):
         left_fit_cr = self.avg_fit
         y_eval = self.img_shape[0]
-        self.radius_of_curvature = (np.power((1+np.power(((2*left_fit_cr[0]*y_eval*ym_per_pix) + left_fit_cr[1]), 2)), 1.5))//np.abs((2*left_fit_cr[0]))
+        A = xm_per_pix/np.power(ym_per_pix, 2)
+        B = xm_per_pix/ym_per_pix
+        self.radius_of_curvature = (np.power((1+np.power(((2*A*left_fit_cr[0]*y_eval*ym_per_pix) + B*left_fit_cr[1]), 2)), 1.5))//np.abs((2*A*left_fit_cr[0]))
         return self.radius_of_curvature
              

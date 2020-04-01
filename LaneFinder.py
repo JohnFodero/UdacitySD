@@ -77,11 +77,22 @@ class LaneFinder():
             ### TO-DO: If you found > minpix pixels, recenter next window ###
             ### (`right` or `leftx_current`) on their mean position ###
             if good_left_inds.shape[0] > minpix:
+                
                 histogram = np.sum(binary_warped[(nwindows-(window+1))*window_height:(nwindows-window)*window_height, win_xleft_low:win_xleft_high], axis=0)
-                leftx_current = np.argmax(histogram) + win_xleft_low
+                try:
+                    leftx_current = np.argmax(histogram) + win_xleft_low
+                except ValueError as e:
+                    print(e)
+                    self.left_lane.detected = False
+                    return binary_warped
             if good_right_inds.shape[0] > minpix:
                 histogram = np.sum(binary_warped[(nwindows-(window+1))*window_height:(nwindows-window)*window_height, win_xright_low:win_xright_high], axis=0)
-                rightx_current = np.argmax(histogram) + win_xright_low
+                try:
+                    rightx_current = np.argmax(histogram) + win_xright_low
+                except ValueError as e:
+                    print(e)
+                    self.right_lane.detected = False
+                    return 
 
         # Concatenate the arrays of indices (previously was a list of lists of pixels)
         try:
